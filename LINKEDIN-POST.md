@@ -1,6 +1,6 @@
 # LinkedIn post drafts
 
-Replace `REPO_URL` with the repository link. Two versions: English and Spanish. LinkedIn renders no Markdown, so paste as plain text; line breaks and emoji are kept.
+Repository: https://github.com/AlexVargasV/php2shell-response-kit. Two versions: English and Spanish. LinkedIn renders no Markdown, so paste as plain text; line breaks and emoji are kept.
 
 ---
 
@@ -28,7 +28,7 @@ I put what I learned into a small open repository:
 🛠️ For developers: a GitHub Action that fails pull requests pinning a vulnerable PHP (Dockerfile, compose, composer, CI), a migration guide off PHP 8.1, Renovate/Dependabot configs, and ready-to-paste nginx/Apache/Cloudflare rules.
 🤖 A context file and prompts so your AI assistant helps with the right facts and safety rules.
 
-👉 REPO_URL
+👉 https://github.com/AlexVargasV/php2shell-response-kit
 
 Patch first, then look back at 20–21 October. A clean log is not proof, but a segfault in php-fpm is a very loud hint.
 
@@ -62,7 +62,7 @@ Lo que aprendí está en un repositorio abierto (en inglés):
 🛠️ Para desarrolladores: una GitHub Action que hace fallar los pull requests que fijan un PHP vulnerable (Dockerfile, compose, composer, CI), una guía para salir de PHP 8.1, configuraciones de Renovate/Dependabot y reglas listas para nginx, Apache y Cloudflare.
 🤖 Un archivo de contexto y prompts para que tu asistente de IA ayude con los datos correctos y reglas de seguridad.
 
-👉 REPO_URL
+👉 https://github.com/AlexVargasV/php2shell-response-kit
 
 Primero parchea, después mira hacia atrás al 20 y 21 de octubre. Un log limpio no es prueba, pero un segfault en php-fpm es una pista muy ruidosa.
 

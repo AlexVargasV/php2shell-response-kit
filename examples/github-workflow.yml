@@ -2,9 +2,9 @@
 # Fails pull requests that pin a PHP version vulnerable to php2shell, and
 # re-checks every Monday so floating pins are revisited.
 #
-# Replace OWNER with the account that hosts php2shell-response-kit, and pin
+# Pin
 # the action to a full commit SHA for supply-chain safety, e.g.
-#   uses: OWNER/php2shell-response-kit@<40-char-sha>
+#   uses: AlexVargasV/php2shell-response-kit@<40-char-sha>
 
 name: php2shell
 
@@ -26,7 +26,7 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: php2shell pin scan
-        uses: OWNER/php2shell-response-kit@main
+        uses: AlexVargasV/php2shell-response-kit@main
         with:
           path: "."
           strict: "false"        # "true" also fails on floating tags like php:8.3-fpm

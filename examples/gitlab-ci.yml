@@ -1,5 +1,5 @@
 # Add this job to your .gitlab-ci.yml.
-# Replace OWNER, and prefer vendoring the script (or pinning a commit SHA in the
+# Prefer vendoring the script (or pinning a commit SHA in the
 # URL) over fetching "main" on every run.
 
 php2shell-pin-scan:
@@ -8,7 +8,7 @@ php2shell-pin-scan:
   before_script:
     - apk add --no-cache bash coreutils grep sed gawk findutils curl
   script:
-    - curl -fsSL https://raw.githubusercontent.com/OWNER/php2shell-response-kit/main/scripts/php-pin-scan.sh -o /tmp/php-pin-scan.sh
+    - curl -fsSL https://raw.githubusercontent.com/AlexVargasV/php2shell-response-kit/main/scripts/php-pin-scan.sh -o /tmp/php-pin-scan.sh
     - bash /tmp/php-pin-scan.sh -f json . > php2shell-scan.json || STATUS=$?
     - bash /tmp/php-pin-scan.sh .
   artifacts:

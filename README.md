@@ -67,7 +67,7 @@ Pick your entry point:
 **4. Was I hit?** On each Linux host:
 
 ```bash
-curl -fsSLO https://raw.githubusercontent.com/OWNER/php2shell-response-kit/main/scripts/php2shell-check.sh
+curl -fsSLO https://raw.githubusercontent.com/AlexVargasV/php2shell-response-kit/main/scripts/php2shell-check.sh
 sudo bash php2shell-check.sh                 # auto-detects web roots
 sudo bash php2shell-check.sh -w /var/www/site -d 30   # explicit web root, 30-day window
 ```
@@ -96,7 +96,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: OWNER/php2shell-response-kit@main   # pin to a commit SHA
+      - uses: AlexVargasV/php2shell-response-kit@main   # pin to a commit SHA
 ```
 
 Full example with scheduling and a build guard: [`examples/github-workflow.yml`](examples/github-workflow.yml).
