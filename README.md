@@ -10,6 +10,9 @@ Practical material for **CVE-2026-109618 / CVE-2026-109619** ("php2shell"), the 
 | [**docs/index.html**](docs/index.html) | Self-assessment form: eight questions, one prioritised action plan. Runs entirely in the browser, no data leaves the page. Open the file locally or publish it with GitHub Pages. | People who want to know "what should *I* do?" in two minutes |
 | [**CHECKLIST.md**](CHECKLIST.md) | The same decision flow as a printable checklist. | Teams, tickets, change requests |
 | [**scripts/php2shell-check.sh**](scripts/php2shell-check.sh) | Read-only Linux triage script. Finds vulnerable PHP binaries and containers, risky ini settings, worker segfaults and OOM bursts, web log anomalies, web shells, odd files and persistence. Writes a report and an evidence folder. | Sysadmins, DevOps, incident responders |
+| [**ai/CONTEXT.md**](ai/CONTEXT.md) | Context file for AI agents: verified facts, decision rules, commands, how to read the script output, known false positives, and mandatory safety rules. Attach it to any AI conversation about php2shell. | People working with Claude, ChatGPT, Copilot, Cursor, Gemini… |
+| [**ai/PROMPTS.md**](ai/PROMPTS.md) | Ready-to-paste prompts: agent with shell access (step-by-step with approval gates), chat-only analysis of the script report, follow-up from the form, management summary, multi-server roll-up. | Same |
+| [**AGENTS.md**](AGENTS.md) | Picked up automatically by coding agents that open this repository; points them to the context file and the rules. | Coding agents |
 | [**LINKEDIN-POST.md**](LINKEDIN-POST.md) | Ready-to-paste announcement text (English and Spanish). | Spreading the word |
 
 ## Quick start
@@ -30,6 +33,8 @@ sudo bash php2shell-check.sh -w /var/www/site -d 30   # explicit web root, 30-da
 
 Read `~/php2shell-triage-<date>/report.txt`. Any **CRITICAL** item means act now; the evidence folder next to it is what you hand to whoever helps you.
 
+**5. Want an AI to help read the results?** The script also writes `ai-handoff.md`: an analyst prompt with the report and key evidence embedded. Paste it into your assistant together with [`ai/CONTEXT.md`](ai/CONTEXT.md). Run with `-R` to redact hostname, IPs, usernames, emails and key fingerprints first. The self-assessment form has a matching **Copy prompt for an AI assistant** button.
+
 The script is read-only: it never modifies, deletes, uploads or "cleans" anything.
 
 ## Notes on the check script
@@ -37,6 +42,7 @@ The script is read-only: it never modifies, deletes, uploads or "cleans" anythin
 - Requires bash, coreutils, grep, find, awk. Run as root for full coverage (`journalctl`, `/proc`, other users' crontabs).
 - Works on Debian/Ubuntu, RHEL/Alma/Rocky, cPanel, Plesk, CloudLinux, LiteSpeed, and detects Docker containers on the host. Inside a container, run it with `-w /var/www/html` and ignore the host-level sections.
 - Web shell signatures describe *behaviour* (user input fed to code execution, decode-then-execute chains, obfuscation), not malware families, and are assembled from fragments so that antivirus engines do not quarantine the scanner itself. Scores of 1–2 are normally legitimate libraries (PDF generators, mailers, template engines). Scores of 6 or more deserve a look every time.
+- `-R` redacts hostname, IPv4/IPv6 addresses, `/home/<user>` paths, e-mail addresses and SSH key fingerprints in `ai-handoff.md` (not in `report.txt`, which stays complete for you).
 - A clean result lowers the probability of compromise; it does not prove it. The script cannot inspect worker memory or logs your provider does not expose.
 
 ## Contributing

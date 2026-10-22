@@ -134,9 +134,11 @@
     <ol class="plan" id="plan"></ol>
     <div class="row">
       <button class="ghost" id="copy">Copy summary</button>
+      <button class="ghost" id="copyai">Copy prompt for an AI assistant</button>
       <a class="ghost" style="padding:12px 18px;border-radius:8px;text-decoration:none" href="../scripts/php2shell-check.sh">Get the check script</a>
     </div>
-    <p class="muted" style="margin-top:14px">This tool gives general guidance for a specific vulnerability. It is not a substitute for an incident responder if you find signs of compromise.</p>
+    <p class="muted" style="margin-top:14px">The AI prompt works best together with <a href="../ai/CONTEXT.md">ai/CONTEXT.md</a>: attach that file to the same conversation.</p>
+    <p class="muted">This tool gives general guidance for a specific vulnerability. It is not a substitute for an incident responder if you find signs of compromise.</p>
   </section>
 
   <footer>
@@ -148,7 +150,7 @@
 (function(){
   const form=document.getElementById('f'), out=document.getElementById('result'), err=document.getElementById('err');
   const RADIOS=['where','ver','sapi','net','patch','upl','waf'];
-  let lastSummary='';
+  let lastSummary='', lastAI='';
 
   function val(n){const e=form.querySelector(`input[name="${n}"]:checked`);return e?e.value:null}
   function sigs(){return [...form.querySelectorAll('input[name="sig"]:checked')].map(e=>e.value)}
@@ -241,9 +243,40 @@
     document.getElementById('headline').textContent=r.headline;
     const ol=document.getElementById('plan'); ol.innerHTML=''; r.steps.forEach(s=>{const li=document.createElement('li'); li.innerHTML=s; ol.appendChild(li);});
     lastSummary = `php2shell self-assessment (${new Date().toISOString().slice(0,10)})\nRisk: ${r.level}\n${r.headline}\n\n` + r.steps.map((s,i)=>`${i+1}. ${s.replace(/<[^>]+>/g,'')}`).join('\n') + '\n\nAnswers: ' + JSON.stringify(a);
+    const L={where:{managed:'managed/shared hosting',server:'VPS/dedicated/cPanel/Plesk I administer',container:'containers/PaaS with my own image',unknown:'unknown'},
+      ver:{fixed:'patched (8.5.12/8.4.27/8.3.36/8.2.35+ or backported)',old82:'8.2-8.5 below the fixed patch level',eol:'8.1 or older (no official fix)',unknown:'unknown'},
+      sapi:{modphp:'Apache mod_php',fpm:'PHP-FPM / LiteSpeed / FastCGI',cli:'CLI only',unknown:'unknown'},
+      net:{public:'internet-reachable',internal:'internal network/VPN only',none:'offline/localhost'},
+      patch:{yes:'can patch today',window:'needs a maintenance window',blocked:'app cannot run on a patched branch'},
+      upl:{off:'Off',on:'On',unknown:'unknown'}, waf:{updated:'yes, rules updated >= 21 Oct 2026',stale:'yes, update status unknown',none:'none'}};
+    const answers = `- Hosting: ${L.where[a.where]}
+- PHP version: ${L.ver[a.ver]}
+- Execution: ${L.sapi[a.sapi]}
+- Reachability: ${L.net[a.net]}
+- Patching: ${L.patch[a.patch]}
+- session.upload_progress.enabled: ${L.upl[a.upl]}
+- WAF: ${L.waf[a.waf]}
+- Signs noticed since 2026-10-20: ${a.sig.join(', ')}`;
+    lastAI = `I used the php2shell self-assessment (CVE-2026-109618 / CVE-2026-109619). Use the attached CONTEXT.md from the php2shell response kit as your reference for facts, decision rules and safety rules.
+
+1. Check the plan below against my answers and tell me if anything is wrong or missing for my setup.
+2. Turn the first step into exact commands or clicks for my platform.
+3. Tell me what evidence would prove I am patched, and what would suggest I was compromised.
+Ask me for details you need instead of guessing. Read-only checks first; tell me before anything that changes the system or interrupts users.
+
+## My answers
+${answers}
+
+## Generated plan (risk: ${r.level})
+${r.headline}
+` + r.steps.map((x,i)=>`${i+1}. ${x.replace(/<[^>]+>/g,'')}`).join('\n');
     out.style.display='block'; out.scrollIntoView({behavior:'smooth'});
   });
   document.getElementById('startover').addEventListener('click',()=>{out.style.display='none';err.style.display='none';});
+  document.getElementById('copyai').addEventListener('click',async()=>{
+    const b=document.getElementById('copyai');
+    try{await navigator.clipboard.writeText(lastAI);b.textContent='Copied';setTimeout(()=>b.textContent='Copy prompt for an AI assistant',1500);}catch(_){alert(lastAI);}
+  });
   document.getElementById('copy').addEventListener('click',async()=>{
     try{await navigator.clipboard.writeText(lastSummary);document.getElementById('copy').textContent='Copied';setTimeout(()=>document.getElementById('copy').textContent='Copy summary',1500);}catch(_){alert(lastSummary);}
   });
