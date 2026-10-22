@@ -1,0 +1,253 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>php2shell Self-Assessment</title>
+<meta name="description" content="Answer eight questions about your PHP setup and get a prioritised action plan for CVE-2026-109618 / CVE-2026-109619 (php2shell).">
+<style>
+  :root{
+    --bg:#f6f7f9; --card:#ffffff; --fg:#161a1f; --muted:#5b6470; --line:#e2e6eb;
+    --accent:#2563eb; --accent-fg:#ffffff;
+    --crit:#b91c1c; --crit-bg:#fee2e2; --high:#c2410c; --high-bg:#ffedd5;
+    --med:#a16207; --med-bg:#fef9c3; --low:#15803d; --low-bg:#dcfce7; --info:#1d4ed8; --info-bg:#dbeafe;
+    --radius:12px;
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --bg:#0f1216; --card:#171b21; --fg:#e8ecf1; --muted:#9aa5b1; --line:#2a313a;
+      --accent:#3b82f6; --crit:#fca5a5; --crit-bg:#3b1111; --high:#fdba74; --high-bg:#3a1f0a;
+      --med:#fde047; --med-bg:#3a2f05; --low:#86efac; --low-bg:#0b2e18; --info:#93c5fd; --info-bg:#102447;
+    }
+  }
+  :root[data-theme="dark"]{
+    --bg:#0f1216; --card:#171b21; --fg:#e8ecf1; --muted:#9aa5b1; --line:#2a313a;
+    --accent:#3b82f6; --crit:#fca5a5; --crit-bg:#3b1111; --high:#fdba74; --high-bg:#3a1f0a;
+    --med:#fde047; --med-bg:#3a2f05; --low:#86efac; --low-bg:#0b2e18; --info:#93c5fd; --info-bg:#102447;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.5 system-ui,-apple-system,Segoe UI,Roboto,sans-serif}
+  main{max-width:760px;margin:0 auto;padding:32px 16px 64px}
+  h1{font-size:1.6rem;margin:0 0 4px}
+  .sub{color:var(--muted);margin:0 0 24px}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:20px;margin-bottom:16px}
+  .q{font-weight:600;margin:0 0 10px}
+  .q small{display:block;font-weight:400;color:var(--muted)}
+  label.opt{display:flex;gap:10px;align-items:flex-start;padding:10px 12px;border:1px solid var(--line);border-radius:8px;margin-bottom:8px;cursor:pointer}
+  label.opt:hover{border-color:var(--accent)}
+  label.opt input{margin-top:4px}
+  button{font:inherit;border:0;border-radius:8px;padding:12px 18px;cursor:pointer}
+  .primary{background:var(--accent);color:var(--accent-fg);font-weight:600}
+  .ghost{background:transparent;color:var(--accent);border:1px solid var(--accent)}
+  .row{display:flex;gap:10px;flex-wrap:wrap;margin-top:8px}
+  .badge{display:inline-block;padding:4px 10px;border-radius:999px;font-weight:700;font-size:.9rem}
+  .CRITICAL{background:var(--crit-bg);color:var(--crit)} .HIGH{background:var(--high-bg);color:var(--high)}
+  .MEDIUM{background:var(--med-bg);color:var(--med)} .LOW{background:var(--low-bg);color:var(--low)} .INFO{background:var(--info-bg);color:var(--info)}
+  ol.plan{padding-left:22px} ol.plan li{margin-bottom:10px}
+  code{background:var(--bg);border:1px solid var(--line);border-radius:4px;padding:1px 5px;font-size:.92em}
+  pre{background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:12px;overflow:auto;font-size:.9em}
+  .muted{color:var(--muted);font-size:.92em}
+  #result{display:none}
+  a{color:var(--accent)}
+  .err{color:var(--crit);font-size:.92em;margin:6px 0 0;display:none}
+  footer{color:var(--muted);font-size:.85em;margin-top:32px}
+</style>
+</head>
+<body>
+<main>
+  <h1>php2shell self-assessment</h1>
+  <p class="sub">CVE-2026-109618 / CVE-2026-109619 — eight questions, one prioritised action plan. Nothing you type leaves this page.</p>
+
+  <form id="f">
+    <div class="card">
+      <p class="q">1. Where does your PHP run?</p>
+      <label class="opt"><input type="radio" name="where" value="managed"> <span>Managed / shared hosting (Hostinger, SiteGround, Namecheap, WordPress.com…). I don't control the OS.</span></label>
+      <label class="opt"><input type="radio" name="where" value="server"> <span>A VPS, dedicated server or cPanel/Plesk box that I administer.</span></label>
+      <label class="opt"><input type="radio" name="where" value="container"> <span>Containers (Docker, Compose, Kubernetes) or a PaaS where I control the image.</span></label>
+      <label class="opt"><input type="radio" name="where" value="unknown"> <span>I don't know.</span></label>
+    </div>
+
+    <div class="card">
+      <p class="q">2. Which PHP version is serving web requests? <small>Check phpinfo() or your panel, not just <code>php -v</code> in a shell.</small></p>
+      <label class="opt"><input type="radio" name="ver" value="fixed"> <span>8.5.12, 8.4.27, 8.3.36, 8.2.35 or newer — or a distro package whose changelog names both CVEs.</span></label>
+      <label class="opt"><input type="radio" name="ver" value="old82"> <span>8.2 to 8.5, but an older patch level than the ones above.</span></label>
+      <label class="opt"><input type="radio" name="ver" value="eol"> <span>8.1, 8.0, 7.x or older.</span></label>
+      <label class="opt"><input type="radio" name="ver" value="unknown"> <span>I don't know.</span></label>
+    </div>
+
+    <div class="card">
+      <p class="q">3. How is PHP executed by the web server?</p>
+      <label class="opt"><input type="radio" name="sapi" value="modphp"> <span>Apache with mod_php.</span></label>
+      <label class="opt"><input type="radio" name="sapi" value="fpm"> <span>PHP-FPM (nginx, Apache proxy, Caddy, LiteSpeed lsphp, FastCGI).</span></label>
+      <label class="opt"><input type="radio" name="sapi" value="cli"> <span>Only command-line scripts and cron jobs. Nothing serves PHP over HTTP.</span></label>
+      <label class="opt"><input type="radio" name="sapi" value="unknown"> <span>I don't know.</span></label>
+    </div>
+
+    <div class="card">
+      <p class="q">4. Is the PHP site reachable from the internet?</p>
+      <label class="opt"><input type="radio" name="net" value="public"> <span>Yes, publicly.</span></label>
+      <label class="opt"><input type="radio" name="net" value="internal"> <span>Only from an internal network or VPN.</span></label>
+      <label class="opt"><input type="radio" name="net" value="none"> <span>No, it is offline / localhost only.</span></label>
+    </div>
+
+    <div class="card">
+      <p class="q">5. Can you update PHP and restart the workers today?</p>
+      <label class="opt"><input type="radio" name="patch" value="yes"> <span>Yes.</span></label>
+      <label class="opt"><input type="radio" name="patch" value="window"> <span>Not today — I need a maintenance window or vendor approval.</span></label>
+      <label class="opt"><input type="radio" name="patch" value="blocked"> <span>No — the application does not support a patched PHP branch.</span></label>
+    </div>
+
+    <div class="card">
+      <p class="q">6. What is <code>session.upload_progress.enabled</code> set to?</p>
+      <label class="opt"><input type="radio" name="upl" value="off"> <span>Off.</span></label>
+      <label class="opt"><input type="radio" name="upl" value="on"> <span>On (this is PHP's default).</span></label>
+      <label class="opt"><input type="radio" name="upl" value="unknown"> <span>I don't know.</span></label>
+    </div>
+
+    <div class="card">
+      <p class="q">7. Is there a WAF or managed firewall in front of the site?</p>
+      <label class="opt"><input type="radio" name="waf" value="updated"> <span>Yes, with rules updated on or after 21 Oct 2026 (Cloudflare managed rules, ModSecurity/Imunify360 ≥ 8.83, provider WAF).</span></label>
+      <label class="opt"><input type="radio" name="waf" value="stale"> <span>Yes, but I'm not sure the rules were updated.</span></label>
+      <label class="opt"><input type="radio" name="waf" value="none"> <span>No.</span></label>
+    </div>
+
+    <div class="card">
+      <p class="q">8. Since 20 October 2026, have you noticed any of these? <small>Select all that apply.</small></p>
+      <label class="opt"><input type="checkbox" name="sig" value="crash"> <span>PHP / Apache worker crashes, segfaults, or bursts of "Allowed memory size exhausted".</span></label>
+      <label class="opt"><input type="checkbox" name="sig" value="5xx"> <span>Unexplained spikes of HTTP 500 / 502 / 503.</span></label>
+      <label class="opt"><input type="checkbox" name="sig" value="files"> <span>New or modified PHP files, especially in uploads, cache or image folders.</span></label>
+      <label class="opt"><input type="checkbox" name="sig" value="users"> <span>Unknown admin users, API tokens, cron jobs or SSH keys.</span></label>
+      <label class="opt"><input type="checkbox" name="sig" value="cpu"> <span>High CPU from a process that isn't your app, or outbound connections you don't recognise.</span></label>
+      <label class="opt"><input type="checkbox" name="sig" value="none"> <span>None of the above / I haven't checked.</span></label>
+    </div>
+
+    <div class="row">
+      <button type="submit" class="primary">Get my action plan</button>
+      <button type="reset" class="ghost" id="startover">Start over</button>
+    </div>
+    <p class="err" id="err">Please answer every question (question 8 can be "none").</p>
+  </form>
+
+  <section id="result" class="card">
+    <p><span class="badge" id="level"></span></p>
+    <p id="headline" style="font-weight:600"></p>
+    <ol class="plan" id="plan"></ol>
+    <div class="row">
+      <button class="ghost" id="copy">Copy summary</button>
+      <a class="ghost" style="padding:12px 18px;border-radius:8px;text-decoration:none" href="../scripts/php2shell-check.sh">Get the check script</a>
+    </div>
+    <p class="muted" style="margin-top:14px">This tool gives general guidance for a specific vulnerability. It is not a substitute for an incident responder if you find signs of compromise.</p>
+  </section>
+
+  <footer>
+    Part of the <a href="../README.md">php2shell response kit</a>. Fixed versions: 8.5.12 · 8.4.27 · 8.3.36 · 8.2.35 (released 2026-10-21). Branches 8.1 and older receive no official fix.
+  </footer>
+</main>
+
+<script>
+(function(){
+  const form=document.getElementById('f'), out=document.getElementById('result'), err=document.getElementById('err');
+  const RADIOS=['where','ver','sapi','net','patch','upl','waf'];
+  let lastSummary='';
+
+  function val(n){const e=form.querySelector(`input[name="${n}"]:checked`);return e?e.value:null}
+  function sigs(){return [...form.querySelectorAll('input[name="sig"]:checked')].map(e=>e.value)}
+
+  function assess(a){
+    const steps=[]; let level='LOW', headline='';
+    const exposedVersion = a.ver==='old82'||a.ver==='eol'||a.ver==='unknown';
+    const webFacing = a.sapi!=='cli';
+    const reachable = a.net!=='none';
+    const compromised = a.sig.some(s=>['files','users','cpu'].includes(s));
+    const attacked = a.sig.some(s=>['crash','5xx'].includes(s));
+
+    if(compromised){
+      level='CRITICAL';
+      headline='You reported indicators that usually mean the host is already compromised. Treat this as an incident, not a patch.';
+      steps.push('<b>Preserve evidence first.</b> Copy logs, the suspicious files and the output of the check script off the server before cleaning anything.');
+      steps.push('<b>Contain.</b> Put the site behind a maintenance page or firewall rule, kill unknown processes, remove unknown cron jobs, SSH keys and admin users.');
+      steps.push('<b>Rotate every credential the web user could read</b>: database passwords, application secrets (.env, salts, API keys), admin passwords, SSH keys stored on the box.');
+      steps.push('<b>Patch PHP</b> to 8.5.12 / 8.4.27 / 8.3.36 / 8.2.35 (or your distro backport) and restart the workers, then redeploy the application from a known-good source or a backup predating 20 Oct 2026.');
+      steps.push('Run <code>scripts/php2shell-check.sh</code> on every other PHP host you own: attackers rarely stop at one.');
+    } else if(exposedVersion && webFacing && reachable){
+      const providerMitigated = a.where==='managed' && a.upl==='off' && a.waf==='updated';
+      level = (a.net==='public' && !providerMitigated) ? 'CRITICAL' : 'HIGH';
+      headline = a.ver==='eol'
+        ? 'You are on a PHP branch that will never receive a fix, serving web requests. Every unpatched public PHP host is being scanned right now.'
+        : 'You are running a vulnerable PHP build that serves web requests. Public exploit tooling exists and attacks began before the patch was released.';
+      if(a.ver==='unknown') steps.push('<b>Find the real version</b>: open phpinfo() in the browser or check your panel. The web version can differ from <code>php -v</code>.');
+      if(a.where==='managed'){
+        if(a.ver==='eol') steps.push('<b>Switch the PHP version in your control panel</b> to 8.3 or 8.4 today (check theme and plugin compatibility first). Your provider cannot patch a branch that has no fix.');
+      } else if(a.patch==='yes'){
+        steps.push(a.ver==='eol'
+          ? '<b>Upgrade the branch today</b> to 8.3 or 8.4 (8.2 leaves security support on 31 Dec 2026). Test on staging if you must, but do it today.'
+          : '<b>Update PHP today</b> to 8.5.12 / 8.4.27 / 8.3.36 / 8.2.35 (or the distro package whose changelog names both CVEs) and <b>restart php-fpm / apache / lsws / the container</b>. A patched binary with old workers running protects nothing.');
+      } else if(a.patch==='window'){
+        steps.push('<b>Escalate the maintenance window to today.</b> This is an unauthenticated, pre-application RCE with public exploits; the risk of waiting exceeds the risk of a restart.');
+      } else {
+        steps.push('<b>Treat the migration as an incident.</b> Options in order: run the app on a supported branch anyway (most frameworks already support 8.3), use a vendor that backports (CloudLinux alt-php, LTS distros), or isolate the host behind a WAF until it is replaced.');
+      }
+      if(a.upl!=='off' && a.where==='managed') steps.push('<b>Check PHP options in your panel</b> and turn <code>session.upload_progress</code> off if it is exposed; otherwise ask your provider to confirm it is disabled platform-wide.');
+      else if(a.upl!=='off') steps.push('<b>Until patched</b>: set <code>session.upload_progress.enabled = Off</code> in php.ini or the FPM pool (not via ini_set), restart workers. Partial mitigation only.');
+      if(a.waf==='none') steps.push('<b>Put a WAF in front</b> (Cloudflare, ModSecurity with Imunify360/OWASP rules ≥ 21 Oct) to block the known exploit pattern while you patch.');
+      if(a.waf==='stale') steps.push('<b>Confirm your WAF rules</b> were updated on or after 21 Oct 2026.');
+      steps.push('Keep <code>post_max_size</code> and <code>upload_max_filesize</code> as low as the application tolerates.');
+      steps.push(attacked
+        ? '<b>You also reported crashes or 5xx spikes</b>: that is the exploitation signature. Run <code>scripts/php2shell-check.sh</code> now and review the segfault and web-shell sections before you clean anything.'
+        : 'Run <code>scripts/php2shell-check.sh</code> after patching to look for worker crashes, dropped files and persistence from the exposure window (20 Oct onward).');
+    } else if(exposedVersion && webFacing && !reachable){
+      level='MEDIUM';
+      headline='Vulnerable build, but not network-reachable. Lower urgency, same fix.';
+      steps.push('Patch at the next opportunity and restart workers; an SSRF or a laptop on the LAN is enough to reach it.');
+      steps.push('Set <code>session.upload_progress.enabled = Off</code> meanwhile.');
+    } else if(exposedVersion && !webFacing){
+      level='LOW';
+      headline='CLI-only PHP is not remotely exploitable through php2shell, but it is the same engine bug.';
+      steps.push('Update with your next package run. Make sure no web server (even a dev one) is actually serving PHP on this host: <code>ss -tlnp | grep -E "php|apache|httpd|lsphp"</code>.');
+    } else if(a.ver==='fixed'){
+      level = attacked ? 'MEDIUM' : 'LOW';
+      headline = attacked
+        ? 'You are patched now, but you reported crashes or 5xx spikes that may date from the exposure window.'
+        : 'You are patched. Verify the restart and look back at the exposure window.';
+      if(a.where!=='managed'){
+        steps.push('<b>Confirm workers were restarted</b> after the update: the PHP master process start time must be later than the package install time.');
+        steps.push('Confirm the web SAPI reports the fixed version (phpinfo), not just the CLI.');
+      }
+      steps.push('Run <code>scripts/php2shell-check.sh</code> once to review 20–21 Oct for segfaults, OOM bursts and dropped files. Attacks started hours before the patch existed.');
+      if(a.where==='managed') steps.push('On managed hosting, confirm <code>session.upload_progress.enabled</code> shows Off in your PHP options; keep it that way.');
+    }
+
+    if(a.where==='managed' && exposedVersion && !compromised){
+      steps.unshift('<b>Managed hosting</b>: the provider applies the patch. Check the PHP info page daily; if it still shows an old build after 48 hours, open a ticket quoting CVE-2026-109618 and CVE-2026-109619. Make sure <code>session.upload_progress.enabled</code> shows Off in your PHP options.');
+    }
+    if(a.where==='container' && exposedVersion && !compromised){
+      steps.unshift(a.ver==='eol'
+        ? '<b>Containers</b>: there is no patched image for this branch. Change the base image to a supported one (<code>php:8.3-fpm</code>, <code>php:8.4-apache</code>…), rebuild, test, recreate.'
+        : '<b>Containers</b>: pull the patched base image (<code>php:8.3-fpm</code> etc.), rebuild, recreate the containers. Pin to the fixed tag if your Dockerfile uses explicit versions.');
+    }
+    if(a.sapi==='unknown') steps.push('Find your SAPI: phpinfo() shows "Server API". mod_php and PHP-FPM are confirmed exploitable; treat LiteSpeed and FastCGI the same way.');
+    if(a.sig.includes('none') && !exposedVersion) steps.push('Look anyway: segfaults in <code>journalctl -k</code>, "Allowed memory size" bursts in error logs, and new .php files in upload folders. The script does this in one pass.');
+
+    return {level, headline, steps};
+  }
+
+  form.addEventListener('submit', e=>{
+    e.preventDefault();
+    const a={}; for(const n of RADIOS){a[n]=val(n); if(!a[n]){err.style.display='block';return;}}
+    a.sig=sigs(); if(a.sig.length===0){err.style.display='block';return;}
+    err.style.display='none';
+    const r=assess(a);
+    const lv=document.getElementById('level'); lv.textContent=r.level; lv.className='badge '+r.level;
+    document.getElementById('headline').textContent=r.headline;
+    const ol=document.getElementById('plan'); ol.innerHTML=''; r.steps.forEach(s=>{const li=document.createElement('li'); li.innerHTML=s; ol.appendChild(li);});
+    lastSummary = `php2shell self-assessment (${new Date().toISOString().slice(0,10)})\nRisk: ${r.level}\n${r.headline}\n\n` + r.steps.map((s,i)=>`${i+1}. ${s.replace(/<[^>]+>/g,'')}`).join('\n') + '\n\nAnswers: ' + JSON.stringify(a);
+    out.style.display='block'; out.scrollIntoView({behavior:'smooth'});
+  });
+  document.getElementById('startover').addEventListener('click',()=>{out.style.display='none';err.style.display='none';});
+  document.getElementById('copy').addEventListener('click',async()=>{
+    try{await navigator.clipboard.writeText(lastSummary);document.getElementById('copy').textContent='Copied';setTimeout(()=>document.getElementById('copy').textContent='Copy summary',1500);}catch(_){alert(lastSummary);}
+  });
+})();
+</script>
+</body>
+</html>
