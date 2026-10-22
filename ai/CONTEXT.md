@@ -231,6 +231,21 @@ Then restart workers and verify **via the web SAPI**, not the CLI.
 - **Docker Compose:** the web container may have no `php` on the host; check inside the PHP container. `docker compose restart` re-reads mounted ini files; a new base image needs `build --pull` + `up -d`.
 - **Managed hosting:** no root, no journal; rely on the panel's phpinfo, provider status page, and the file/app checks via SSH or file manager.
 
-## 9. References
+## 9. Developer and fleet tools in the kit
+
+| Tool | Use it to | Notes for the agent |
+|---|---|---|
+| `scripts/php-pin-scan.sh [-f text\|github\|json] [-s] [-x REGEX] DIR` | Find vulnerable/unsupported PHP pins in a code repository | Exit 1 on FAIL. Levels: FAIL (deployed runtime vulnerable or ≤ 8.1, composer constraint with no fixed branch), WARN (floating tags, digest pins, provider-managed runtimes, distro packages for ≤ 8.1, local envs), INFO (old branches in a CI matrix, platform.php). Prefer `-f json` when parsing. |
+| `action.yml` (GitHub Action) | Same, on pull requests | Inputs: `path`, `strict`, `exclude`, `fail-on-findings`; outputs `failures`, `warnings`. |
+| `scripts/php-exposure-inventory.sh -i domains.txt` | List which of the user's own sites advertise a vulnerable version | One GET per domain. Only for domains the user owns. "UNKNOWN" means hidden, not safe. Distro builds may show old numbers with backports. |
+| `fleet/run-ssh.sh -H hosts.txt [-R]` / `fleet/ansible/php2shell-check.yml` | Run the triage on many hosts | Read-only. Collects `report.txt` + `ai-handoff.md` per host and a SUMMARY. |
+| `snippets/runtime-guard.php` → `php2shell_status()` | Health checks from inside the app | `distro_build: true` + `patched: false` means "verify the changelog", not "vulnerable". |
+| `snippets/docker-build-guard.Dockerfile` | Fail `docker build` on vulnerable bases | Same version table as everywhere else. |
+| `snippets/wordpress/php2shell-site-health.php` | WordPress Site Health item | Install as mu-plugin. |
+| `snippets/*.conf`, `cloudflare-waf-rule.md` | Interim multipart blocking | Breaks uploads; poor fit for Moodle/LMS (many forms are multipart). Check `snippets/README.md` fit table before proposing. |
+| `guides/MIGRATION.md` | Moving off ≤ 8.1 | Default target 8.4; 8.3 if a dependency lags. Moodle 5.2 needs 8.3–8.4. |
+| `guides/DISTROS.md` | Backport verification per distro | Never quote package version numbers from memory; point to the advisory. |
+
+## 10. References
 
 PHP Foundation release post · Sansec research · CISA alert · Qualys · Huntress · Help Net Security · BleepingComputer · AlmaLinux advisory · Hostinger blog. Links in `GUIDE.md` § 11.

@@ -92,7 +92,7 @@ apt changelog php8.3-cli 2>/dev/null | grep -iE 'CVE-2026-10961[89]' | head   # 
 rpm -q --changelog php | grep -iE 'CVE-2026-10961[89]' | head                  # RHEL family
 ```
 
-Or run `scripts/php2shell-check.sh`, which does all of the above.
+Or run `scripts/php2shell-check.sh`, which does all of the above. Per-distribution advisory links and commands: [guides/DISTROS.md](guides/DISTROS.md). To check what your **code repositories** pin (Dockerfiles, compose, composer, CI), run `scripts/php-pin-scan.sh` (see [DEVELOPERS.md](DEVELOPERS.md)); to list which of your sites advertise a vulnerable version, `scripts/php-exposure-inventory.sh`.
 
 ---
 
@@ -146,7 +146,7 @@ The provider patches the platform. Check your control panel's **PHP info** page 
 
 There is **no official fix**. Options, in order of preference:
 
-1. Upgrade the application to a supported PHP branch (8.3 or 8.4). Most modern frameworks and CMS already support them.
+1. Upgrade the application to a supported PHP branch (8.3 or 8.4). Most modern frameworks and CMS already support them. Step-by-step: [guides/MIGRATION.md](guides/MIGRATION.md).
 2. Use a vendor that backports (CloudLinux `alt-php`, some Linux distributions for their LTS releases).
 3. If neither is possible, apply **all** mitigations in section 7, put a WAF in front, and plan the migration as an incident, not a project.
 
@@ -163,7 +163,7 @@ There is **no official fix**. Options, in order of preference:
 | `memory_limit = -1` | Removes the OOM trigger | **Dangerous**: a single request can consume all server memory. Only with strict monitoring, and only briefly. |
 | Take PHP read-only / offline (reject non-GET/HEAD with 503, or stop PHP-FPM behind a static maintenance page) | Fully closes the hole | Site is down for writes/logins |
 
-None of these replace the update.
+None of these replace the update. Ready-to-paste versions (php.ini, PHP-FPM pool, nginx, Apache/LiteSpeed, Cloudflare) and a table of which applications they fit are in [`snippets/`](snippets/README.md).
 
 ---
 

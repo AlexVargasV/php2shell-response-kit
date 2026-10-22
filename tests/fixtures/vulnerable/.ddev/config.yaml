@@ -1,0 +1,3 @@
+name: legacy
+type: php
+php_version: "8.1"

@@ -1,0 +1,2 @@
+FROM rockylinux:9
+RUN dnf module enable -y php:remi-8.1 && dnf install -y php

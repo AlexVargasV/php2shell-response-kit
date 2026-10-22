@@ -1,0 +1,43 @@
+# Copy to .github/workflows/php2shell.yml in YOUR repository.
+# Fails pull requests that pin a PHP version vulnerable to php2shell, and
+# re-checks every Monday so floating pins are revisited.
+#
+# Replace OWNER with the account that hosts php2shell-response-kit, and pin
+# the action to a full commit SHA for supply-chain safety, e.g.
+#   uses: OWNER/php2shell-response-kit@<40-char-sha>
+
+name: php2shell
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  schedule:
+    - cron: "0 7 * * 1"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  pin-scan:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: php2shell pin scan
+        uses: OWNER/php2shell-response-kit@main
+        with:
+          path: "."
+          strict: "false"        # "true" also fails on floating tags like php:8.3-fpm
+          # exclude: "^./legacy/"
+
+  # Optional: prove the image you actually build is patched.
+  # build-guard:
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - uses: actions/checkout@v4
+  #     - run: docker build -t app:ci .
+  #     - run: |
+  #         docker run --rm app:ci php -r '$f=["8.2"=>"8.2.35","8.3"=>"8.3.36","8.4"=>"8.4.27","8.5"=>"8.5.12"];$b=PHP_MAJOR_VERSION.".".PHP_MINOR_VERSION;
+  #           if(version_compare($b,"8.2","<")||(isset($f[$b])&&version_compare(PHP_VERSION,$f[$b],"<"))){fwrite(STDERR,"vulnerable PHP ".PHP_VERSION."\n");exit(1);} echo PHP_VERSION," OK\n";'

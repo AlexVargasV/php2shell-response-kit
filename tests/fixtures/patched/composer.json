@@ -1,0 +1,6 @@
+{
+    "require": {
+        "php": "^8.2",
+        "symfony/console": "^7.0"
+    }
+}

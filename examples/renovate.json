@@ -1,0 +1,26 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": ["config:recommended"],
+  "description": "Keep PHP base images current so the next PHP security release arrives as a pull request.",
+  "packageRules": [
+    {
+      "description": "Official php images: pin digests and raise security-labelled PRs quickly",
+      "matchDatasources": ["docker"],
+      "matchPackageNames": ["php", "library/php", "docker.io/library/php"],
+      "pinDigests": true,
+      "labels": ["security", "php"],
+      "minimumReleaseAge": "0 days",
+      "prPriority": 10
+    },
+    {
+      "description": "Do not let Renovate jump PHP minor branches automatically (8.3 -> 8.4 is a migration)",
+      "matchDatasources": ["docker"],
+      "matchPackageNames": ["php", "library/php", "docker.io/library/php"],
+      "matchUpdateTypes": ["minor", "major"],
+      "enabled": false
+    }
+  ],
+  "vulnerabilityAlerts": {
+    "labels": ["security"]
+  }
+}

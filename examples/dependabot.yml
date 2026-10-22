@@ -1,0 +1,31 @@
+# Copy to .github/dependabot.yml.
+# Dependabot can only bump tags that carry a full version, so pin
+# `php:8.3.36-fpm` rather than `php:8.3-fpm` if you want PRs for patch releases.
+
+version: 2
+updates:
+  - package-ecosystem: "docker"          # Dockerfile FROM lines
+    directory: "/"
+    schedule:
+      interval: "daily"
+    labels: ["security", "php"]
+    ignore:
+      # keep branch changes (8.3 -> 8.4) as deliberate migrations
+      - dependency-name: "php"
+        update-types: ["version-update:semver-minor", "version-update:semver-major"]
+
+  - package-ecosystem: "docker-compose"  # image: lines in compose files
+    directory: "/"
+    schedule:
+      interval: "daily"
+    labels: ["security", "php"]
+
+  - package-ecosystem: "composer"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"

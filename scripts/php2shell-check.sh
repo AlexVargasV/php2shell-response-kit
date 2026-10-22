@@ -161,8 +161,8 @@ fi
 # ini / .user.ini / .htaccess overrides anywhere under web roots
 # (web roots are detected below; store the check as a function)
 ini_overrides() {
-  find "$@" -maxdepth 6 -type f \( -name .user.ini -o -name php.ini -o -name .htaccess \) 2>/dev/null \
-    | xargs -r grep -HnEi 'auto_(prepend|append)_file|upload_progress|allow_url_include' 2>/dev/null
+  find "$@" -maxdepth 6 -type f \( -name .user.ini -o -name php.ini -o -name .htaccess \) -print0 2>/dev/null \
+    | xargs -0 -r grep -HnEi 'auto_(prepend|append)_file|upload_progress|allow_url_include' 2>/dev/null
 }
 
 # =============================================================================
@@ -183,7 +183,7 @@ else
 fi
 
 # Log files: php-fpm, apache, nginx, litespeed, cpanel, plesk, app logs
-LOGS=$(find /var/log /usr/local/lsws/logs /var/www /home /opt/bitnami 2>/dev/null -maxdepth 5 -type f \
+LOGS=$(find /var/log /usr/local/lsws/logs /var/www /home /opt/bitnami -maxdepth 5 -type f \
        \( -iname '*error*log*' -o -iname 'php*fpm*.log*' -o -iname 'php_error*' -o -iname 'error_log' -o -iname 'debug.log' -o -iname 'stderr.log' \) -size +0 -mtime -45 2>/dev/null | head -60)
 if [ -n "$LOGS" ]; then
   : > "$EV/oom-crashes.txt"
@@ -210,7 +210,7 @@ fi
 # =============================================================================
 sec "4. ATTACK EVIDENCE: web access logs"
 # =============================================================================
-ACC=$(find /var/log/apache2 /var/log/httpd /var/log/nginx /usr/local/lsws/logs /var/log/lsws /var/log/virtualmin /usr/local/apache/domlogs /var/www/vhosts/system 2>/dev/null -maxdepth 4 -type f \( -iname '*access*log*' -o -iname '*.log' -path '*domlogs*' \) -size +0 -mtime -45 2>/dev/null | head -40)
+ACC=$(find /var/log/apache2 /var/log/httpd /var/log/nginx /usr/local/lsws/logs /var/log/lsws /var/log/virtualmin /usr/local/apache/domlogs /var/www/vhosts/system -maxdepth 4 -type f \( -iname '*access*log*' -o -iname '*.log' -path '*domlogs*' \) -size +0 -mtime -45 2>/dev/null | head -40)
 if [ -n "$ACC" ]; then
   A="$EV/access-merged.txt"; : > "$A"
   for f in $ACC; do case "$f" in *.gz) zcat "$f" 2>/dev/null;; *) cat "$f" 2>/dev/null;; esac >> "$A"; done
@@ -273,7 +273,7 @@ else
   n=$(wc -l < "$EV/oneliners.txt"); if [ "$n" -gt 0 ]; then med "$n candidate(s) (minified libraries are common false positives):"; cat "$EV/oneliners.txt" | ind; else ok "None."; fi
 
   info ".htaccess with redirects, cloaking or handler tricks:"
-  h="$(find "${WEBROOTS[@]}" -name .htaccess -type f 2>/dev/null | xargs -r grep -HnEi 'RewriteRule[^#]*https?://|HTTP_USER_AGENT[^#]*(google|bing|yandex)|AddHandler[^#]*php[^#]*\.(jpg|png|gif|ico|txt)|AddType[^#]*php[^#]*\.(jpg|png|gif|ico|txt)|ErrorDocument[^#]*\.php' 2>/dev/null | head -10)"
+  h="$(find "${WEBROOTS[@]}" -name .htaccess -type f -print0 2>/dev/null | xargs -0 -r grep -HnEi 'RewriteRule[^#]*https?://|HTTP_USER_AGENT[^#]*(google|bing|yandex)|AddHandler[^#]*php[^#]*\.(jpg|png|gif|ico|txt)|AddType[^#]*php[^#]*\.(jpg|png|gif|ico|txt)|ErrorDocument[^#]*\.php' 2>/dev/null | head -10)"
   if [ -n "$h" ]; then high "Suspicious .htaccess rules:"; printf '%s\n' "$h" | cut -c1-160 | ind; else ok "None."; fi
 
   if [ -n "${WEBUSER:-}" ]; then
@@ -306,7 +306,7 @@ else
     "4|($E|$AS|$CF)${SP}\([^;]*$IN"
     "4|$IN${SP}\[[^]]*\]${SP}\("
     "4|($SYS)${SP}\(${SP}@?${SP}($IN|$B64)"
-    "3|\\\$[a-zA-Z_]+${SP}=${SP}$IN[^;]*;[^;]*\\\$[a-zA-Z_]+${SP}\(${SP}\\\$[a-zA-Z_]+"
+    "3|\\\$[a-zA-Z_]+${SP}=${SP}${IN}[^;]*;[^;]*\\\$[a-zA-Z_]+${SP}\(${SP}\\\$[a-zA-Z_]+"
     "3|preg_replace${SP}\(${SP}[\"'][^\"']*/[a-zA-Z]*e[a-zA-Z]*[\"']"
     "2|\\\$GLOBALS${SP}\[${SP}[\"']_+[A-Za-z0-9_]+[\"']${SP}\]"
     "2|(\\\\x[0-9a-fA-F]{2}){8,}"

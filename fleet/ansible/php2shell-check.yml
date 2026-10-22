@@ -1,0 +1,65 @@
+# php2shell read-only triage across a fleet.
+#
+#   ansible-playbook -i inventory.ini php2shell-check.yml
+#   ansible-playbook -i inventory.ini php2shell-check.yml -e redact=false -e lookback_days=14
+#
+# Results land in ./results/<host>/{report.txt,ai-handoff.md} plus results/SUMMARY.txt.
+# The check itself never modifies the target; the play only copies the script to
+# /tmp, runs it, fetches the output and deletes the script again.
+
+- name: php2shell read-only triage
+  hosts: php_servers
+  become: true
+  gather_facts: false
+  vars:
+    kit_script: "{{ playbook_dir }}/../../scripts/php2shell-check.sh"
+    triage_dir: /tmp/php2shell-triage
+    remote_script: /tmp/php2shell-check.sh
+    results_dir: "{{ playbook_dir }}/results"
+    redact: true
+    quick: false
+    lookback_days: 30
+
+  tasks:
+    - name: Upload the check script
+      ansible.builtin.copy:
+        src: "{{ kit_script }}"
+        dest: "{{ remote_script }}"
+        mode: "0700"
+
+    - name: Run the triage (read-only, may take several minutes on large sites)
+      ansible.builtin.command:
+        argv: "{{ ['bash', remote_script, '-o', triage_dir, '-d', lookback_days | string]
+                  + (['-R'] if redact | bool else [])
+                  + (['-q'] if quick | bool else []) }}"
+      async: 3600
+      poll: 15
+      changed_when: false
+
+    - name: Fetch report and AI hand-off
+      ansible.builtin.fetch:
+        src: "{{ triage_dir }}/{{ item }}"
+        dest: "{{ results_dir }}/{{ inventory_hostname }}/"
+        flat: true
+      loop:
+        - report.txt
+        - ai-handoff.md
+
+    - name: Remove the uploaded script (evidence stays in {{ triage_dir }})
+      ansible.builtin.file:
+        path: "{{ remote_script }}"
+        state: absent
+
+    - name: Build a one-line-per-host summary
+      ansible.builtin.shell: |
+        set -o pipefail
+        for r in {{ results_dir | quote }}/*/report.txt; do
+          h=$(basename "$(dirname "$r")")
+          printf '%-30s %-60s %s\n' "$h" "$(grep -m1 '^VERDICT:' "$r")" "$(grep -m1 '^Critical:' "$r")"
+        done > {{ (results_dir ~ '/SUMMARY.txt') | quote }}
+      args:
+        executable: /bin/bash
+      delegate_to: localhost
+      become: false
+      run_once: true
+      changed_when: false

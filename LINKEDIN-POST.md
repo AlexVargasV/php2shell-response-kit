@@ -25,6 +25,8 @@ I put what I learned into a small open repository:
 📘 A plain-English guide: what the bugs are, why "hardening" is not enough, how to patch on every platform (Debian/Ubuntu, RHEL, Docker, cPanel, Plesk, managed hosting), and what to do on 8.1 or older.
 📝 A self-assessment form: eight questions → a prioritised action plan for your situation.
 🔍 A read-only check script for Linux: finds vulnerable binaries and containers, risky ini settings, worker segfaults and OOM bursts (the exploitation signature), web shells, and persistence. Produces a report and an evidence folder.
+🛠️ For developers: a GitHub Action that fails pull requests pinning a vulnerable PHP (Dockerfile, compose, composer, CI), a migration guide off PHP 8.1, Renovate/Dependabot configs, and ready-to-paste nginx/Apache/Cloudflare rules.
+🤖 A context file and prompts so your AI assistant helps with the right facts and safety rules.
 
 👉 REPO_URL
 
@@ -57,6 +59,8 @@ Lo que aprendí está en un repositorio abierto (en inglés):
 📘 Guía clara: qué son los fallos, por qué "endurecer" no basta, cómo parchear en cada plataforma (Debian/Ubuntu, RHEL, Docker, cPanel, Plesk, hosting administrado) y qué hacer si estás en 8.1 o menor.
 📝 Un formulario de autoevaluación: ocho preguntas → plan de acción priorizado para tu caso.
 🔍 Un script de solo lectura para Linux: detecta binarios y contenedores vulnerables, ajustes de riesgo, segfaults y ráfagas de OOM en los workers (la firma de explotación), webshells y persistencia. Genera informe y carpeta de evidencia.
+🛠️ Para desarrolladores: una GitHub Action que hace fallar los pull requests que fijan un PHP vulnerable (Dockerfile, compose, composer, CI), una guía para salir de PHP 8.1, configuraciones de Renovate/Dependabot y reglas listas para nginx, Apache y Cloudflare.
+🤖 Un archivo de contexto y prompts para que tu asistente de IA ayude con los datos correctos y reglas de seguridad.
 
 👉 REPO_URL
 

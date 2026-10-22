@@ -1,0 +1,49 @@
+name: ci
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: ShellCheck
+        run: shellcheck -S warning scripts/*.sh fleet/*.sh tests/run.sh
+
+      - name: Test suite
+        run: bash tests/run.sh
+
+      - name: Validate YAML and JSON examples
+        run: |
+          python3 -c "import yaml,sys; [yaml.safe_load(open(f)) for f in sys.argv[1:]]" \
+            action.yml examples/*.yml fleet/ansible/*.yml .github/workflows/*.yml
+          python3 -m json.tool examples/renovate.json > /dev/null
+
+  action-self-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Action passes on the patched fixture
+        uses: ./
+        with:
+          path: tests/fixtures/patched
+          strict: "true"
+
+      - name: Action fails on the vulnerable fixture
+        id: vuln
+        uses: ./
+        continue-on-error: true
+        with:
+          path: tests/fixtures/vulnerable
+
+      - name: Assert the vulnerable scan failed
+        run: |
+          test "${{ steps.vuln.outcome }}" = "failure"
+          test "${{ steps.vuln.outputs.failures }}" -ge 5

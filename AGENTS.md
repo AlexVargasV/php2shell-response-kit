@@ -17,4 +17,7 @@ This repository is a response kit for **php2shell (CVE-2026-109618 / CVE-2026-10
 
 - `scripts/php2shell-check.sh` must stay **read-only**, dependency-free (bash, coreutils, grep, find, awk), LF line endings, and pass `bash -n`.
 - `docs/index.html` must stay a single self-contained file with no network requests.
-- Version numbers and dates must match across `GUIDE.md`, `ai/CONTEXT.md`, `CHECKLIST.md`, `docs/index.html` and the script (`FIXED_*` variables).
+- Every script in `scripts/` and `fleet/` must stay read-only on the target (the fleet tools only upload the check script to /tmp and delete it afterwards), pass `bash -n` and `shellcheck -S warning`, and use LF line endings.
+- Version numbers and dates must match across `GUIDE.md`, `ai/CONTEXT.md`, `CHECKLIST.md`, `docs/index.html`, every script (`FIXED_*` variables) and the snippets. `tests/run.sh` checks this.
+- Run `bash tests/run.sh` after any change; add a fixture under `tests/fixtures/` when you teach `php-pin-scan.sh` a new file type.
+- Do not add package version numbers to `guides/DISTROS.md` without a link to the vendor advisory that states them.
